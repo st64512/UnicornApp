@@ -1,0 +1,73 @@
+Subject: [PATCH] Přidáno filtrování přes input
+---
+Index: tasks/05/src/App.js
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/tasks/05/src/App.js b/tasks/05/src/App.js
+--- a/tasks/05/src/App.js	
++++ b/tasks/05/src/App.js	
+@@ -127,14 +127,20 @@
+     const usersFilter = [
+         {
+             title: "Name",
+-            filterComponent: () => <input/>,
+-            filterFunction: (data, filterComponentOutput) => data.filter((item) => item.startsWith(filterComponentOutput))
++            filterComponent: (filterComponentOutput, setFilterComponentOutput) => <input key={"myInput"}
++                                                                                         name={"myInput"}
++                                                                                         value={filterComponentOutput?.myInput || ""}
++                                                                                         onChange={(e) => setFilterComponentOutput((prev) => ({ ...prev, myInput: e.target.value
++                                                                                         }) )}/>,
++            filterFunction: (data, filterComponentOutput) => {
++              return data?.filter((item) => (filterComponentOutput.myInput && filterComponentOutput.myInput.length >= 1) ? item.name.toLowerCase().startsWith(filterComponentOutput?.myInput.toLowerCase()) : true)
++            }
+         }
+     ]
+ 
+     return (<>
+             <YellowWrapper title={"Deklarativní seznam"}>
+-                <List data={users} component={(user) => <UserItem user={user}/>}/>
++                <List data={users} component={(user) => <UserItem key={"userItem" + user.id} user={user}/>}/>
+             </YellowWrapper>
+ 
+             <YellowWrapper title={"Deklarativní tabulka"}>
+Index: tasks/05/src/Table.js
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/tasks/05/src/Table.js b/tasks/05/src/Table.js
+--- a/tasks/05/src/Table.js	
++++ b/tasks/05/src/Table.js	
+@@ -3,15 +3,20 @@
+ export default function Table({data, columns, filters}) {
+ 
+     const [filteredData, setFilteredData] = useState([] || data)
++    const [filterComponentOutput, setFilterComponentOutput] = useState({})
+ 
+     useEffect(() => {
+         setFilteredData(data);
+     }, [data])
+ 
++    useEffect(() => {
++      filters && setFilteredData(...filters.map((item) => item?.filterFunction && item.filterFunction(data, filterComponentOutput)))
++    }, [filterComponentOutput])
++
+     return <>
+-        {filters && filters.map((item) =>
+-            item?.filterComponent && item.filterComponent() ||
+-            <button onClick={()=> setFilteredData(item.filterFunction(data))}>{item.title}</button>) }
++        {filters && filters.map((item, index) =>
++            item?.filterComponent && item.filterComponent(filterComponentOutput, setFilterComponentOutput) ||
++            <button key={"btn" + index} onClick={()=> setFilteredData(item.filterFunction(data))}>{item.title}</button>) }
+ 
+         <table>
+         <tbody>
+@@ -27,4 +32,4 @@
+         </tbody>
+     </table>
+     </>
+-}
+\ No newline at end of file
++}

@@ -1,38 +1,64 @@
 
 import './App.css';
-import ListItem from "./components/list/ListItem";
-import {useState} from "react";
-import Error from "./components/notifications/Error";
+import Table from "./components/table/Table";
+import MySecondTable from "./components/table/MySecondTable";
+
+
+/*
+TODO to next time:
+pagination for table with json server
+ */
 
 function App() {
-  const [items, setItems] = useState([]);
-  const [inputValue, setInputValue] = useState("");
-  const [selectedColor, setSelectedColor] = useState("");
+    async function deleteItem (id) {
+        const response = await fetch( 'http://localhost:3004/todos/' + id, {
+            method: 'DELETE'
+        })
+        if(!response.ok) {
+            throw new Error("Cannot delete todo element");
+        }
+    }
+    const data =[
+        {
+        "userId": 1,
+        "id": 1,
+        "title": "delectus aut autem",
+        "completed": false
+    },
+        {
+            "userId": 1,
+            "id": 2,
+            "title": "quis ut nam facilis et officia qui",
+            "completed": false
+        }] ;
 
-  return (
-      <div className="App">
-        <h1>Seznam</h1>
-        <input type="text" onChange={(e) => setInputValue(e.target.value)}/>
-          {inputValue?.length < 5 && <Error error="Bad input" message="It has to be longer than 5 chars"/>}
-          <select onChange={(e) => {
-              setSelectedColor(e.target.value);
-          }}>
-              <option selected disabled>Choose color</option>
-              <option value="violet">Violet</option>
-              <option value="red">Red</option>
-              <option value="blue">Blue</option>
-          </select>
-        <button onClick={(e) => {
-            items.push({'title': inputValue, 'color': selectedColor, 'completed' : false});
-            setItems([...items]);
-        }} disabled={inputValue.length < 5}>Vlož</button>
-          {items.map((item, index) =>
-              <ListItem onButtonClick={(indexOfObject) => {
-                  items[indexOfObject].completed = !items[indexOfObject].completed
-                  setItems([...items])
-              }} item={item} key={index} index={index}/>)}
-      </div>
-  );
+    const columns = [
+        {
+            attribute: "title"
+        },
+        {
+            attribute: "id",
+            component: (item) => <button onClick={() => deleteItem(item.id)}>{item.id}</button>
+        }
+    ]
+
+    const usersColumn = [
+        {
+            attribute: "name"
+        },
+        {
+            attribute: "id",
+            component: (item) => <button>{item.id}</button>
+        }
+    ]
+
+    return (
+        <div className="App">
+            <Table data={data} columns={columns} />
+            <MySecondTable baseUri={"http://localhost:3004/users"} columns={usersColumn}/>
+            <MySecondTable baseUri={"http://localhost:3004/todos"} columns={columns}/>
+        </div>
+    );
 }
 
 export default App;
