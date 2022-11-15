@@ -2,12 +2,16 @@
 import './App.css';
 import Table from "./components/table/Table";
 import MySecondTable from "./components/table/MySecondTable";
-
-
-/*
-TODO to next time:
-pagination for table with json server
- */
+import React from "react";
+import {
+    BrowserRouter as Router,
+    Switch,
+    Route,
+    Link,
+    useRouteMatch,
+    useParams
+} from "react-router-dom";
+import UserDetail from "./components/UserDetail";
 
 function App() {
     async function deleteItem (id) {
@@ -49,14 +53,49 @@ function App() {
         {
             attribute: "id",
             component: (item) => <button>{item.id}</button>
+        },
+        {
+            attribute: "detail",
+            component: (item) => {
+                let target = "/detail/" + item.id;
+                return <Link to={target}>detail usera</Link>
+            }
         }
     ]
 
     return (
         <div className="App">
-            <Table data={data} columns={columns} />
-            <MySecondTable baseUri={"http://localhost:3004/users"} columns={usersColumn}/>
-            <MySecondTable baseUri={"http://localhost:3004/todos"} columns={columns}/>
+            <Router>
+                <div>
+                    <nav>
+                        <ul>
+                            <li>
+                                <Link to="/">Home</Link>
+                            </li>
+                            <li>
+                                <Link to="/user">Users</Link>
+                            </li>
+                            <li>
+                                <Link to="/todo">TODOS</Link>
+                            </li>
+                        </ul>
+                    </nav>
+                    <Switch>
+                        <Route path="/user">
+                            <MySecondTable baseUri={"http://localhost:3004/users"} columns={usersColumn}/>
+                        </Route>
+                        <Route path="/todo">
+                            <MySecondTable baseUri={"http://localhost:3004/todos"} columns={columns}/>
+                        </Route>
+                        <Route path="/detail/:userId">
+                            <UserDetail/>
+                        </Route>
+                        <Route path="/">
+                            <Table data={data} columns={columns} />
+                        </Route>
+                    </Switch>
+                </div>
+            </Router>
         </div>
     );
 }

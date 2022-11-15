@@ -8,7 +8,7 @@ function Table(props) {
             <table>
                 <thead>
                 <tr>
-                    {cols.map( col => (
+                    {cols?.map( col => (
                         <th key={"th" + col.attribute}>{col.attribute}</th>
                     ))}
                 </tr>
@@ -16,7 +16,7 @@ function Table(props) {
                 <tbody>
                 {data.map( d => (
                     <tr key={"tr" + d.id}>
-                        {cols.map( col => (
+                        {cols?.map( col => (
                             <td key={"td" + d.id + col.attribute}>{(col?.component && col.component(d)) ?? d[col.attribute]}</td>
                         ))}
                     </tr>
